@@ -1,0 +1,12 @@
+{
+    "development": {
+        "LOG_LEVEL": "debug",
+        "HOST_IP": "192.168.1.44",
+        "MASTER_HOST": "192.168.1.44"
+    },
+    "production": {
+        "LOG_LEVEL": "info",
+        "HOST_IP": "",
+        "MASTER_HOST": ""
+    }
+}
