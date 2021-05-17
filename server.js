@@ -5,7 +5,7 @@ const { log } = require("./config/config.js");
 const express = require("express");
 const Docker = require("dockerode");
 const DockerUtils = require("./src/dockerUtils");
-const { postConducktor } = require("./src/post");
+const post = require("./src/post");
 
 const dockerCon = new Docker({ socketPath: "/var/run/docker.sock" });
 
@@ -27,32 +27,52 @@ async function initShefRunner() {
         });
 
         log.info("First boot checks!");
-        // await checkContainers();
-        await postConducktor();
+        await post.postConducktor();
+        // await post.testFunc();
 
         setInterval(async () => {
             try {
-                log.info("Scheduled container checks!");
-                // await checkContainers();
-                await postConducktor();
+                log.debug("Scheduled container checks!");
+                await post.postConducktor();
             } catch (err) {
-                log.fatal("Something wrong with system containers and couldn't restarted.", err);
+                log.fatal("Something wrong.", err);
             }
-        }, 20000);
+        }, 30000);
 
         const app = express();
         app.use(express.json());
 
-        app.post("/container", (req, res) => {
-            
+        app.post("/container", async (req, res) => {
+            let container = req.body;
+            log.debug(container);
+            await post.createContainer(container.opts)
+                .then(reply => {
+                    log.debug(reply);
+                    res.json(reply)
+                })
+                .catch((err) => {
+                    log.error(err);
+                    res.status(409).json({ error: err });
+                })
+            await post.postConducktor(false);
         });
 
-        app.put("/container", (req, res) => {
-            
+        app.delete("/container", async (req, res) => {
+            let container = req.body;
+            await post.deleteContainer(container)
+                .then(reply => {
+                    log.debug(reply);
+                    res.json(reply);
+                })
+                .catch((err) => {
+                    log.error(err);
+                    res.status(409).json({ error: err });
+                })
+            await post.postConducktor(false);
         });
 
-        app.delete("/container", (req, res) => {
-            
+        app.get("/health", (req, res) => {
+            res.status(200).send({ OK: true });
         });
 
         app.listen(global.gConfig.PORT, () => {

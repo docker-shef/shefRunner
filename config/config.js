@@ -20,13 +20,12 @@ if (!isIPv4(finalConfig.HOST_IP)) {
 }
 
 finalConfig.MASTER_HOST = process.env.MASTER_HOST || finalConfig.MASTER_HOST || finalConfig.HOST_IP;
-if (!isIPv4(finalConfig.finalConfig.MASTER_HOST)) {
+if (!isIPv4(finalConfig.MASTER_HOST)) {
     throw log.fatal("MASTER_HOST environment variable is not a set properly!");
 }
 
 finalConfig.PORT = 11044;
-finalConfig.CONDUCKTOR_URL = "http://" + finalConfig.MASTER_HOST + ":8084";
-finalConfig.KEY_NAME = "runner." + finalConfig.HOST_IP;
+finalConfig.CONDUCKTOR_URL = "http://" + finalConfig.MASTER_HOST + ":8044";
 finalConfig.LOG_LEVEL = process.env.LOG_LEVEL || finalConfig.LOG_LEVEL;
 
 log.info("Timezone", Intl.DateTimeFormat().resolvedOptions().timeZone);
