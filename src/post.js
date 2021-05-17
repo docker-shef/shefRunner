@@ -24,14 +24,7 @@ const postConducktor = async (check = true) => {
     }
 
     if (check) {
-        let res = await axios.get(global.gConfig.CONDUCKTOR_URL + "/runner", { data: runnerSchema }).catch(e => null);
-        if (_.isEmpty(res)) {
-            log.info("Deleting containers deleted by Conducktor.");
-            for (const container in listedContainers) {
-                await deleteContainer(container);
-            }
-            runnerSchema.containers = await docker.listContainers();
-        } else {
+        await axios.get(global.gConfig.CONDUCKTOR_URL + "/runner", { data: runnerSchema }).then(async res => {
             for (const container of res.data.containers) {
                 listedContainers = listedContainers.filter(item => item.name !== container.name);
             }
@@ -42,11 +35,21 @@ const postConducktor = async (check = true) => {
                 }
                 runnerSchema.containers = await docker.listContainers();
             }
-        }
+        }).catch(async err => {
+            if (err.response) {
+                log.info("Deleting containers because Conducktor deleted this runner.");
+                for (const container in listedContainers) {
+                    await deleteContainer(container);
+                }
+                runnerSchema.containers = await docker.listContainers();
+            } else {
+                log.error("Something wrong with conducktor endpoint.");
+            }
+        });
     }
-    await axios.post(global.gConfig.CONDUCKTOR_URL + "/runner", runnerSchema).then((res) => {
+    await axios.post(global.gConfig.CONDUCKTOR_URL + "/runner", runnerSchema).then(res => {
         log.debug(`conducktor post ${JSON.stringify(res.data)}`);
-    }).catch((e) => {
+    }).catch(e => {
         log.error("Something wrong with conducktor endpoint.");
         log.debug(e);
     })
