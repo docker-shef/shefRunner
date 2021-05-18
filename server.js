@@ -42,33 +42,28 @@ async function initShefRunner() {
         const app = express();
         app.use(express.json());
 
-        app.post("/container", async (req, res) => {
+        app.post("/container", (req, res) => {
             let container = req.body;
-            log.debug(container);
-            await post.createContainer(container.opts)
-                .then(reply => {
-                    log.debug(reply);
-                    res.json(reply)
-                })
-                .catch((err) => {
-                    log.error(err);
-                    res.status(409).json({ error: err });
-                })
-            await post.postConducktor(false);
+            post.createContainer(container.opts).then(reply => {
+                res.status(200).send(JSON.stringify({name: reply.name}))
+                post.postConducktor(false);
+            }).catch((err) => {
+                log.error(err);
+                res.status(409).json({ error: err });
+                post.postConducktor(false);
+            })
         });
 
-        app.delete("/container", async (req, res) => {
+        app.delete("/container", (req, res) => {
             let container = req.body;
-            await post.deleteContainer(container)
-                .then(reply => {
-                    log.debug(reply);
-                    res.json(reply);
-                })
-                .catch((err) => {
+            post.deleteContainer(container).then(reply => {
+                    res.status(200).send(JSON.stringify({name: reply.name}));
+                    post.postConducktor(false);
+                }).catch((err) => {
                     log.error(err);
                     res.status(409).json({ error: err });
+                    post.postConducktor(false);
                 })
-            await post.postConducktor(false);
         });
 
         app.get("/health", (req, res) => {

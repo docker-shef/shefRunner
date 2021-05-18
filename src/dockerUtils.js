@@ -2,6 +2,7 @@
 
 const { isEmpty } = require("lodash");
 const { log } = require("../config/config.js");
+const _ = require("lodash");
 const streamToPromise = require("stream-to-promise");
 
 class Util {
@@ -62,13 +63,16 @@ class Util {
         };
         let imageExist = false;
         if (!containerSchema.Image.includes(":")) containerSchema.Image = containerSchema.Image + ":latest";
-        for (const image of await this.dockerCon.listImages()) {
-            if (image.RepoTags.includes(opts.Image)) {
+        const images = await this.dockerCon.listImages();
+        for (const image of images) {
+            if (_.isEmpty(image.RepoTags)) continue;
+            if (image.RepoTags.indexOf(containerSchema.Image) !== -1) {
                 imageExist = true;
                 break;
             };
         }
         if (!imageExist) {
+            log.debug("Image doesn't exist, download it.")
             await streamToPromise(await this.dockerCon.pull(containerSchema.Image).catch((err) => {
                 log.fatal(err);
                 throw "Couldn't pull Image!";
