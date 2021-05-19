@@ -2,7 +2,7 @@
 
 ## POC Docker-shef shefRunner🛵 Repository
 
-ShefRunner is docker host agent of the system. It is responsible for creating and deleting containers ordered by Conducktor.
+ShefRunner is docker host agent of the system. It is responsible for creating and deleting containers ordered by Conducktor. To know which containers to create or delete shefRunner send requests to Conducktor endpoint and use the metadata specified to itself. Conducktor uses `11044` port of shefRunner by default to order actions.
 
 For docker-shef system details visit [here](https://github.com/docker-shef/docker-shef).
 
